@@ -153,21 +153,54 @@ const observer = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.animate-on-scroll').forEach((el) => observer.observe(el));
 
-// معالجة نموذج الاتصال الوهمي
+document.querySelectorAll('.animate-on-scroll').forEach((el) => observer.observe(el));
+// ========================================= //
+// معالجة نموذج الاتصال وإرسال البيانات إلى الواتساب //
+// ========================================= //
+
 document.getElementById('bookingForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+    e.preventDefault(); // منع إعادة تحميل الصفحة
+
+    // 1. جلب البيانات من الحقول
+    const name = document.getElementById('inputName').value;
+    const phone = document.getElementById('inputPhone').value;
+    const message = document.getElementById('inputMessage').value;
+
+    // 2. رقم الواتساب الخاص بالعيادة لاستقبال الحجوزات
+    // ⚠️ تنبيه: ضع الرقم هنا بالصيغة الدولية بدون علامة (+) وبدون أصفار في البداية
+    // مثال: 9647755600578
+    //const whatsappNumber = "9647755600578"; 
+    const whatsappNumber = "9647715204894";
+
+    // 3. تجهيز نص الرسالة وتنسيقها
+    let text = `مرحباً عيادة د. حسن الطائي، أود طلب استشارة مجانية.%0a%0a`;
+    text += `👤 الاسم: ${name}%0a`;
+    text += `📞 رقم الهاتف: ${phone}%0a`;
+    
+    if (message.trim() !== "") {
+        text += `📝 الاستفسار: ${message}%0a`;
+    }
+
+    // 4. إنشاء رابط الواتساب المباشر
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${text}`;
+
+    // 5. تأثير حركي للزر
     const btn = document.getElementById('submitBtn');
     const successMsg = document.getElementById('formSuccess');
     
-    btn.innerText = currentLang === 'ar' ? 'جاري الإرسال...' : 'Sending...';
+    btn.innerText = currentLang === 'ar' ? 'جاري التحويل للواتساب...' : 'Redirecting...';
     btn.style.opacity = '0.7';
 
+    // 6. فتح الواتساب بعد ثانية ونصف وإظهار رسالة النجاح
     setTimeout(() => {
-        btn.innerText = translations[currentLang].submitBtn;
-        btn.style.opacity = '1';
-        successMsg.style.display = 'block';
-        this.reset();
+        window.open(whatsappUrl, '_blank'); // يفتح الواتساب في نافذة جديدة
         
+        btn.innerText = translations[currentLang].submitBtn; // إعادة النص الأصلي للزر
+        btn.style.opacity = '1';
+        successMsg.style.display = 'block'; // إظهار رسالة "تم الإرسال"
+        this.reset(); // تفريغ الحقول
+        
+        // إخفاء رسالة النجاح بعد 5 ثوانٍ
         setTimeout(() => { successMsg.style.display = 'none'; }, 5000);
     }, 1500);
 });
